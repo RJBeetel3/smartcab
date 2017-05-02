@@ -77,9 +77,20 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Calculate the maximum Q-value of all actions for a given state
-
-        maxQ = None
-
+        maxQ_val = 0
+ 		#Choose action with max Q value
+        for act in self.Q[state]:
+ 			if self.Q[state][act] > max_Q:
+ 				action = act
+ 				maxQ_val = self.Q[state][act]
+ 				print "Action with > Q"
+ 				
+        if maxQ_val == 0:
+ 			action = random.choice(self.valid_actions)
+ 			print "Random Action because Q all 0" 		
+        
+        maxQ = action
+		
         return maxQ 
 
 
@@ -92,7 +103,12 @@ class LearningAgent(Agent):
         # When learning, check if the 'state' is not in the Q-table
         # If it is not, create a new dictionary for that state
         #   Then, for each action available, set the initial Q-value to 0.0
-
+        if self.learning == True:
+        	if self.Q.get(state) == None:
+        		self.Q[state] = {a:0 for a in self.valid_actions}
+        		print "Actions: "
+        		for acts in self.Q[state]:
+        			print "actions = {}	Q vals = {}".format(acts, self.Q[state][acts])
         return
 
 
@@ -111,7 +127,14 @@ class LearningAgent(Agent):
         # When not learning, choose a random action
         # When learning, choose a random action with 'epsilon' probability
         #   Otherwise, choose an action with the highest Q-value for the current state
- 
+        
+        if ((self.learning != True) or (random.random() < self.epsilon)):
+        	action = random.choice(self.valid_actions)
+        	print "Random Action" 		
+        else:
+            action = self.get_maxQ(state)
+  					 
+ 			
         return action
 
 
@@ -125,7 +148,9 @@ class LearningAgent(Agent):
         ###########
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
-
+        #self.get_maxQ(state)
+        self.Q[state][action] = self.alpha*(reward + self.Q[state][action]) 
+        print "new Q = {}".format(self.Q[state][action])
         return
 
 
@@ -161,7 +186,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent)
+    agent = env.create_agent(LearningAgent, learning = True)
     
     ##############
     # Follow the driving agent
