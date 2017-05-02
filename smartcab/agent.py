@@ -9,6 +9,7 @@ class LearningAgent(Agent):
         This is the object you will be modifying. """ 
 
     def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5):
+        
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment 
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -18,12 +19,13 @@ class LearningAgent(Agent):
         self.Q = dict()          # Create a Q-table which will be a dictionary of tuples
         self.epsilon = epsilon   # Random exploration factor
         self.alpha = alpha       # Learning factor
+        self.gamma = 0.9         # Discount factor
 
         ###########
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
-
+        
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -39,7 +41,12 @@ class LearningAgent(Agent):
         # Update epsilon using a decay function of your choice
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
-
+        if testing:
+            self.epsilon = 0
+            self.alpha = 0
+        else:
+			self.epsilon = self.epsilon*math.exp(-self.env.t/100)
+			self.gamma = math.pow(0.9,self.env.t)
         return None
 
     def build_state(self):
@@ -56,7 +63,8 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set 'state' as a tuple of relevant data for the agent        
-        state = None
+        state = (waypoint, deadline, inputs['light'], inputs['oncoming'], inputs['left'],
+                 inputs['right']) 
 
         return state
 
@@ -145,7 +153,7 @@ def run():
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment()
+    env = Environment(verbose = True)
     
     ##############
     # Create the driving agent
