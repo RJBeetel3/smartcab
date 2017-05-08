@@ -87,6 +87,9 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Calculate the maximum Q-value of all actions for a given state
+        
+       
+        """ THIS CODE RETURNS ACTION ASSOCIATED WITH maxQ value
         maxQ_val = 0
  		#Choose action with max Q value
         for act in self.Q[state]:
@@ -99,9 +102,8 @@ class LearningAgent(Agent):
         if maxQ_val == 0:
  			action = random.choice(self.valid_actions)
  			print "Random Action because Q all 0" 		
-        
-        maxQ = action
-		
+        """
+        maxQ = max(self.Q[state].values())
         return maxQ 
 
 
@@ -117,11 +119,11 @@ class LearningAgent(Agent):
         if self.learning == True:
         	if self.Q.get(state) == None:
         		self.Q[state] = {a:0 for a in self.valid_actions}
-        		print "Creating state Actions: "
-        		for acts in self.Q[state]:
-        			print "actions = {}	Q vals = {}".format(acts, self.Q[state][acts])
+        		#print "Creating state Actions: "
+        		#for acts in self.Q[state]:
+        		#	print "actions = {}	Q vals = {}".format(acts, self.Q[state][acts])
         	else: 
-        		print "State previously visited"
+        		pass #print "State previously visited"
         		
         return
 
@@ -141,16 +143,28 @@ class LearningAgent(Agent):
         # When not learning, choose a random action
         # When learning, choose a random action with 'epsilon' probability
         # Otherwise, choose an action with the highest Q-value for the current state
+        #for debugging purposes
         randy = random.random()
         if ((self.learning == False) or (randy < self.epsilon)):
         	action = random.choice(self.valid_actions)
-        	print "randy < epsilon; {} < {}".format(randy, self.epsilon)
+        	#print "randy < epsilon; {} < {}".format(randy, self.epsilon)
         	print "Random Action Epsilon" 		
         else:
-            action = self.get_maxQ(state)
             print "Getting Max Q"
-  					 
- 			
+            maxQ = self.get_maxQ(state)
+            print "maxQ = {}".format(maxQ)
+            # Kind of clever solution but only returns 1 key/action
+            #action = self.Q[state].keys()[self.Q[state].values().index(maxQ)]
+            maxQ_actions = []
+            for action, q_val in self.Q[state].items(): 
+            	if q_val == maxQ:
+            		maxQ_actions.append(action)
+            
+            print "bucha actions = {}".format(maxQ_actions)
+            #print "type of thing = {}".format(type(maxQ_actions))
+            action = random.choice(maxQ_actions)
+            print action
+ 		    
         return action
 
 
@@ -167,11 +181,12 @@ class LearningAgent(Agent):
         #self.get_maxQ(state)
         # This implementation does not use gamma... but if it did
         # self.Q[state][action] += self.alpha(reward + gamma * argmax(R(s',a')) - self.Q[state][action])
-        self.Q[state][action] += self.alpha*(reward - self.Q[state][action]) 
-        print "new Q = {}".format(self.Q[state][action])
+        if self.learning == True:
+        	self.Q[state][action] += self.alpha*(reward - self.Q[state][action]) 
+        	print "new Q = {}".format(self.Q[state][action])
         
         return
-
+  	
 
     def update(self):
         """ The update function is called when a time step is completed in the 
@@ -220,7 +235,7 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay = 0.01, optimized = False, log_metrics = True)
+    sim = Simulator(env, update_delay = 0.01, optimized = True, log_metrics = False)
     
     ##############
     # Run the simulator
